@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Proof of Concept</title>
+
+    <style>
+      .wrapper {
+        width: 80%;
+        max-width: 980px;
+        margin: auto;
+        text-align: center;
+      }
+
+      canvas {
+        border: 2px solid black;
+      }
+
+      #download_frame {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <canvas id="canvas" width="400" height="300"></canvas>
+      <div class="wrapper">
+        <input type="file" id="upload">
+        <button id="download">Download Image</button>
+      </div>
+    </div>
+
+    <script>
+      function downloadImage() {
+        var canvas = document.getElementById('canvas');
+        var a = document.createElement('a');
+
+        a.href = canvas.toDataURL();
+        a.download = 'image.png';
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      function uploadImage() {
+        var file = this.files[0];
+        var imageType = /^image\//;
+        var preview = document.getElementById('preview');
+
+        if (!imageType.test(file.type)) {
+          console.log("That ain't an image");
+          return;
+        }
+
+        var img = new Image();
+        img.file = file;
+
+        var reader = new FileReader();
+        reader.onload = (function(aImg) {
+          return function(e) {
+            aImg.src = e.target.result;
+            aImg.onload = function() {
+              applyFilters(aImg);
+            }
+          };
+        })(img);
+
+        reader.readAsDataURL(file);
+      }
+
+      function applyFilters(image) {
+        var canvas = document.getElementById('canvas');
+
+        if (canvas.getContext) {
+          var context = canvas.getContext('2d');
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(image, 0, 0);
+
+          // Apply the Gradient
+          var gradientCanvas = document.createElement('canvas');
+          var gradientContext = gradientCanvas.getContext('2d');
+          var gradient = gradientContext.createLinearGradient(0, 0, canvas.width, 0);
+          gradient.addColorStop('0', 'blue');
+          gradient.addColorStop('0.5', 'green');
+          gradient.addColorStop('1.0', 'blue');
+          gradientContext.fillStyle = gradient;
+          gradientContext.fillRect(0, 0, canvas.width, canvas.height);
+
+          context.globalCompositeOperation = 'multiply';
+          context.drawImage(gradientCanvas, 0, 0, canvas.width, canvas.height);
+
+          // Apply the Logo
+          var logo = new Image();
+          logo.src = 'logo.png';
+          logo.onload = function() {
+            context.globalCompositeOperation = 'screen';
+            context.drawImage(logo, 10, canvas.height - logo.height - 10, logo.width, logo.height);
+          }
+        }
+      }
+
+      function initialize() {
+        var button = document.getElementById('download');
+        button.addEventListener('click', downloadImage);
+
+        var input = document.getElementById('upload');
+        input.addEventListener('change', uploadImage, false);
+      }
+
+      initialize();
+    </script>
+  </body>
+</html>
