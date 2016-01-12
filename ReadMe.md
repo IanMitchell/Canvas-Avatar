@@ -1,3 +1,3 @@
 Proof of concept!
 
-![](https://raw.github.com/ianmitchell/canvas-avatar/master/example_output.png)
+![](https://github.com/ianmitchell/canvas-avatar/blob/master/example_output.png)
